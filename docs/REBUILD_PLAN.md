@@ -165,12 +165,12 @@ project from the schema and evolve it.
 
 Grouped by area, mapped from today's ~50 screens. This is the scope.
 
-**A. Accounts & Auth**
+**A. Accounts & Auth** *(see locked decision #4 — free providers only)*
 - Welcome / landing
-- Sign up (name → username → password → phone verify)
-- Username generation + availability check
-- Log in (by username, email, or phone)
-- Password reset (via email or phone OTP)
+- Sign in / sign up with **Google**, **Apple**, or **email + password**
+- Pick a username (generation + availability check)
+- Password reset via **email** (free; no SMS)
+- Optional phone number on profile (for contacts friend-matching; not verified by SMS)
 - Delete account
 
 **B. Onboarding**
@@ -377,19 +377,33 @@ vertical slice of it forward. Phases are a guide, not a cage.
 
 ---
 
-## 14. Open product decisions (your call)
+## 14. Decisions (locked)
 
-These shape the build; none block starting Phase 0:
+Guiding principle: **cheapest viable path** — no monetization plan yet, so keep
+fixed/usage costs near zero until there's a reason not to.
 
-1. **"Leave the app" strictness** — lenient, strict, or user-configurable? (§8)
-2. **Analytics tool** — keep Mixpanel, or move to PostHog (open-source, generous
-   free tier)?
-3. **Styling system** — NativeWind (Tailwind-style, familiar) vs. Tamagui
-   (fastest, built-in theming). I lean NativeWind for simplicity.
-4. **Auth identifiers** — keep username + phone + email, or simplify to one
-   primary (e.g. phone) to reduce edge cases?
-5. **Brand refresh** — reuse the current visual identity, or redesign the look as
-   part of this?
+| # | Decision | Choice | Why |
+|---|---|---|---|
+| 1 | "Leave the app" strictness | **Configurable, default strict** | Strict = the real stakes that make OneCase work; power users can loosen it. |
+| 2 | Product analytics | **PostHog** | Free tier (~1M events/mo), session replay; drops a paid vendor. |
+| 3 | Styling system | **NativeWind** | Simple, popular, easy for any engineer to pick up. |
+| 4 | Login | **Google + Apple sign-in + email/password** (all free). **Phone = optional profile field, never SMS-verified.** | SMS codes cost money per text; social + email are free and one-tap. Phone kept only for contacts-based friend matching. |
+| 5 | Visual design | **Reuse now, polish in Phase 5** | Expect heavy design iteration later; not a one-way door. |
+
+### Cost model (early scale)
+
+| Item | Cost |
+|---|---|
+| Supabase (db, auth, social login, storage, realtime) | $0 (free tier) |
+| Expo / EAS (builds + OTA updates) | $0 (free tier) |
+| Sentry (errors) | $0 (free tier) |
+| PostHog (analytics) | $0 (free tier) |
+| **Apple Developer Program** | **$99 / year** (required for App Store/TestFlight) |
+| **Google Play Developer** | **$25 one-time** |
+| SMS | **$0 — avoided by design** (no phone-code login) |
+
+> Apple rule: offering Google sign-in obligates also offering Sign in with Apple
+> (guideline 4.8). Both are free, so we ship both.
 
 ---
 
