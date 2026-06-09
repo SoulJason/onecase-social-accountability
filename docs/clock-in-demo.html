@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>OneCase — Clock In Demo</title>
+<style>
+  :root{
+    --blueberry:#7189FF;
+    --cerulean:#758ECD;
+    --apple:#96DE90;
+    --apple-dark:#5cb85c;
+    --danger:#FF5858;
+    --bg:#FFFCF7;
+    --ink:#1a1a1a;
+    --muted:#7a7a7a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;
+    min-height:100%;padding:24px 20px;overflow-x:hidden;
+  }
+  .brand{font-weight:800;font-size:30px;color:var(--blueberry);letter-spacing:-.5px;margin-bottom:2px;}
+  .tag{color:var(--muted);font-size:13px;margin-bottom:22px;}
+  .card{
+    width:100%;max-width:440px;background:#fff;border-radius:24px;
+    padding:26px 22px;box-shadow:0 10px 30px rgba(0,0,0,.08);
+    border:1px solid rgba(0,0,0,.04);
+  }
+  .task-title{font-size:22px;font-weight:700;text-align:center;margin:2px 0 4px;}
+  .case-chip{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:13px;margin-bottom:18px;}
+  .case-dot{width:10px;height:10px;border-radius:50%;background:var(--apple);}
+
+  /* timer ring */
+  .ring-wrap{position:relative;width:240px;height:240px;margin:6px auto 10px;}
+  svg.ring{transform:rotate(-90deg);}
+  .ring-bg{stroke:#ECECEC;}
+  .ring-fg{stroke:var(--apple);stroke-linecap:round;transition:stroke .3s;}
+  .time{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+  }
+  .time .big{font-size:52px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;}
+  .time .sub{font-size:13px;color:var(--muted);margin-top:2px;}
+
+  /* duration picker */
+  .pickerLabel{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 10px;}
+  .chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+  .chip{
+    padding:10px 16px;border-radius:999px;border:2px solid #E6E6E6;background:#fff;
+    font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s;
+  }
+  .chip.active{border-color:var(--apple);background:rgba(150,222,144,.16);color:var(--apple-dark);}
+
+  /* buttons */
+  .btn{
+    width:100%;border:none;border-radius:16px;padding:17px;font-size:18px;font-weight:700;
+    color:#fff;cursor:pointer;transition:transform .08s,filter .15s;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-go{background:var(--apple);}
+  .btn-cancel{background:#9A9A9A;}
+  .btn-out{background:var(--danger);}
+  .btn-ghost{background:none;color:var(--muted);font-weight:600;font-size:15px;padding:12px;border:none;cursor:pointer;width:100%;}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;line-height:1.5;margin-top:16px;padding:0 4px;}
+  .hint b{color:var(--danger);}
+
+  /* council */
+  .council{margin-top:22px;text-align:center;}
+  .council .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .avatars{display:flex;gap:8px;justify-content:center;}
+  .av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;}
+
+  /* result overlay */
+  .overlay{
+    position:fixed;inset:0;background:var(--bg);display:none;
+    flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;z-index:10;
+  }
+  .overlay.show{display:flex;animation:pop .4s ease;}
+  @keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  .emoji{font-size:78px;margin-bottom:6px;}
+  .res-title{font-size:30px;font-weight:800;margin-bottom:8px;}
+  .res-sub{font-size:16px;color:var(--muted);max-width:320px;line-height:1.5;margin-bottom:8px;}
+  .notif{
+    margin-top:18px;background:#fff;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;
+    box-shadow:0 8px 24px rgba(0,0,0,.1);max-width:340px;text-align:left;
+  }
+  .notif .ic{width:40px;height:40px;border-radius:12px;background:var(--blueberry);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .notif .txt{font-size:13px;line-height:1.4;}
+  .notif .txt b{display:block;font-size:14px;margin-bottom:2px;}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+  <div class="brand">OneCase</div>
+  <div class="tag">Social Accountability Demo</div>
+
+  <div class="card">
+    <div class="task-title">Write for the gym 💪</div>
+    <div class="case-chip"><span class="case-dot"></span> Fitness · with your council</div>
+
+    <div class="ring-wrap">
+      <svg class="ring" width="240" height="240" viewBox="0 0 240 240">
+        <circle class="ring-bg" cx="120" cy="120" r="108" fill="none" stroke-width="16"/>
+        <circle class="ring-fg" id="ring" cx="120" cy="120" r="108" fill="none" stroke-width="16"
+                stroke-dasharray="678.58" stroke-dashoffset="0"/>
+      </svg>
+      <div class="time">
+        <div class="big" id="timeText">0:30</div>
+        <div class="sub" id="timeSub">selected</div>
+      </div>
+    </div>
+
+    <!-- IDLE -->
+    <div id="idle">
+      <div class="pickerLabel">Pick a session length</div>
+      <div class="chips" id="chips">
+        <div class="chip" data-s="15">15s</div>
+        <div class="chip active" data-s="30">30s</div>
+        <div class="chip" data-s="60">1m</div>
+        <div class="chip" data-s="180">3m</div>
+      </div>
+      <button class="btn btn-go" id="clockInBtn">⏰ Clock In</button>
+      <div class="hint">Once the 10-second grace passes, if you <b>leave this tab or switch apps</b> you'll fail — and your council gets notified. That's the whole point. 😅</div>
+    </div>
+
+    <!-- GRACE -->
+    <div id="grace" class="hidden">
+      <button class="btn btn-cancel" id="cancelBtn">Cancel (10)</button>
+      <div class="hint">Grace period — back out now with no penalty. Tracking starts when this hits 0.</div>
+    </div>
+
+    <!-- TRACKING -->
+    <div id="tracking" class="hidden">
+      <button class="btn btn-out" id="giveUpBtn">⏰ Clock Out (Give Up)</button>
+      <div class="hint">You're locked in. <b>Don't leave the app.</b></div>
+    </div>
+
+    <div class="council">
+      <div class="lbl">Your Council</div>
+      <div class="avatars">
+        <div class="av" style="background:#7189FF">JD</div>
+        <div class="av" style="background:#96DE90">SK</div>
+        <div class="av" style="background:#FF8A65">AM</div>
+        <div class="av" style="background:#BA68C8">RL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="overlay" id="overlay">
+    <div class="emoji" id="resEmoji">🎉</div>
+    <div class="res-title" id="resTitle">Session complete!</div>
+    <div class="res-sub" id="resSub">You stayed locked in the whole time.</div>
+    <div class="notif" id="notif">
+      <div class="ic">🔔</div>
+      <div class="txt"><b id="notifTitle">Council notified</b><span id="notifBody"></span></div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:26px" id="againBtn">← Try again</button>
+  </div>
+
+<script>
+(function(){
+  var CIRC = 678.58; // 2*pi*108
+  var selected = 30;
+  var planned = 30;
+  var remaining = 30;
+  var graceLeft = 10;
+  var phase = 'idle'; // idle | grace | tracking | done
+  var timer = null;
+  var graceTimer = null;
+
+  var el = function(id){return document.getElementById(id);};
+  function buzz(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+  function fmt(s){
+    var m = Math.floor(s/60), sec = s%60;
+    return m + ':' + String(sec).padStart(2,'0');
+  }
+  function setRing(frac){ // frac = portion remaining
+    el('ring').style.strokeDashoffset = (CIRC * (1-frac)).toFixed(1);
+  }
+  function setRingColor(c){ el('ring').style.stroke = c; }
+
+  function show(id){ ['idle','grace','tracking'].forEach(function(p){ el(p).classList.toggle('hidden', p!==id); }); }
+
+  // duration chips
+  el('chips').addEventListener('click', function(e){
+    var c = e.target.closest('.chip'); if(!c) return;
+    [].forEach.call(document.querySelectorAll('.chip'), function(x){x.classList.remove('active');});
+    c.classList.add('active');
+    selected = parseInt(c.dataset.s,10);
+    el('timeText').textContent = fmt(selected);
+    setRing(1);
+  });
+
+  el('clockInBtn').addEventListener('click', startGrace);
+  el('cancelBtn').addEventListener('click', function(){ resetIdle(); });
+  el('giveUpBtn').addEventListener('click', function(){ fail('gave up'); });
+  el('againBtn').addEventListener('click', function(){ el('overlay').classList.remove('show'); resetIdle(); });
+
+  function resetIdle(){
+    clearInterval(timer); clearInterval(graceTimer);
+    phase='idle'; remaining=selected; planned=selected; graceLeft=10;
+    el('timeText').textContent = fmt(selected);
+    el('timeSub').textContent = 'selected';
+    setRingColor('#96DE90'); setRing(1);
+    show('idle');
+  }
+
+  function startGrace(){
+    buzz(20);
+    planned = selected; remaining = selected; graceLeft = 10;
+    phase='grace';
+    el('timeSub').textContent = 'starting…';
+    el('timeText').textContent = fmt(remaining);
+    setRingColor('#758ECD'); setRing(1);
+    show('grace');
+    el('cancelBtn').textContent = 'Cancel ('+graceLeft+')';
+    graceTimer = setInterval(function(){
+      graceLeft--;
+      el('cancelBtn').textContent = 'Cancel ('+graceLeft+')';
+      if(graceLeft<=0){ clearInterval(graceTimer); startTracking(); }
+    },1000);
+  }
+
+  function startTracking(){
+    buzz([30,40,30]);
+    phase='tracking';
+    el('timeSub').textContent = 'locked in — stay in the app';
+    setRingColor('#96DE90');
+    show('tracking');
+    var start = Date.now();
+    timer = setInterval(function(){
+      var elapsed = Math.floor((Date.now()-start)/1000);
+      remaining = Math.max(planned - elapsed, 0);
+      el('timeText').textContent = fmt(remaining);
+      setRing(remaining/planned);
+      if(remaining<=0){ clearInterval(timer); succeed(); }
+    },250);
+  }
+
+  // THE CORE MECHANIC: leaving the app during tracking = fail
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden && phase==='tracking'){
+      fail('left the app');
+    }
+  });
+  window.addEventListener('blur', function(){
+    if(phase==='tracking'){ /* extra signal on some browsers */ }
+  });
+
+  function succeed(){
+    phase='done'; buzz([40,60,120]);
+    el('resEmoji').textContent='🎉';
+    el('resTitle').textContent='You did it!';
+    el('resSub').textContent='You stayed locked in for the whole session. Progress logged.';
+    el('notifTitle').textContent='Council notified';
+    el('notifBody').textContent='Jordan, Sam, Aisha & Riley saw you finished. 🙌';
+    el('notif').style.opacity=1;
+    el('overlay').classList.add('show');
+  }
+
+  function fail(reason){
+    if(phase==='done') return;
+    phase='done'; clearInterval(timer); clearInterval(graceTimer);
+    buzz([120,60,120]);
+    el('resEmoji').textContent='😬';
+    el('resTitle').textContent = reason==='gave up' ? 'You gave up early' : 'You left the app!';
+    el('resSub').textContent = reason==='gave up'
+      ? 'You clocked out before the timer finished.'
+      : 'You switched away mid-session, so the clock-in failed.';
+    el('notifTitle').textContent='Council notified 😳';
+    el('notifBody').textContent='Jordan, Sam, Aisha & Riley were just told you bailed.';
+    el('overlay').classList.add('show');
+  }
+
+  resetIdle();
+})();
+</script>
+</body>
+</html>
