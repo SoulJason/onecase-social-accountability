@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { Link } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
+import { FormScreen } from "@/components/ui/FormScreen";
 import { Input } from "@/components/ui/Input";
 import { supabase } from "@/lib/supabase";
 
@@ -28,8 +28,8 @@ export default function SignIn() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
-      <View className="flex-1 justify-center px-6">
+    <FormScreen center>
+      <View className="px-6">
         <Text className="mb-1 text-3xl font-extrabold text-ink">Welcome back</Text>
         <Text className="mb-8 text-base text-ink/60">Sign in to your council.</Text>
 
@@ -65,6 +65,6 @@ export default function SignIn() {
           </Link>
         </View>
       </View>
-    </SafeAreaView>
+    </FormScreen>
   );
 }

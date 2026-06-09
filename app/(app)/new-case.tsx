@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useCreateCase } from "@/api/cases";
 import { Button } from "@/components/ui/Button";
+import { FormScreen } from "@/components/ui/FormScreen";
 import { Input } from "@/components/ui/Input";
 
 const COLORS = ["#96DE90", "#7189FF", "#758ECD", "#FF8A65", "#BA68C8", "#FFD166"];
@@ -29,8 +29,8 @@ export default function NewCase() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
-      <View className="flex-1 px-6 pt-4">
+    <FormScreen>
+      <View className="px-6 pt-4">
         <Pressable onPress={() => router.back()} className="mb-2" hitSlop={10}>
           <Text className="text-base text-blueberry">‹ Cancel</Text>
         </Pressable>
@@ -66,7 +66,7 @@ export default function NewCase() {
           ))}
         </View>
 
-        <View className="mt-auto pb-4">
+        <View className="mt-10">
           <Button
             label={createCase.isPending ? "Creating…" : "Create case"}
             onPress={create}
@@ -74,6 +74,6 @@ export default function NewCase() {
           />
         </View>
       </View>
-    </SafeAreaView>
+    </FormScreen>
   );
 }

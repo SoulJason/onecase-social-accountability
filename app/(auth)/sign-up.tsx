@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { Link, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
+import { FormScreen } from "@/components/ui/FormScreen";
 import { Input } from "@/components/ui/Input";
 import { supabase } from "@/lib/supabase";
 
@@ -29,17 +29,14 @@ export default function SignUp() {
     // If email confirmation is OFF, we get a session and the auth layout
     // redirects to /home automatically. If it's ON, there's no session yet.
     if (!data.session) {
-      Alert.alert(
-        "Almost there",
-        "Check your email to confirm your account, then sign in.",
-      );
+      Alert.alert("Almost there", "Check your email to confirm your account, then sign in.");
       router.replace("/sign-in");
     }
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
-      <View className="flex-1 justify-center px-6">
+    <FormScreen center>
+      <View className="px-6">
         <Text className="mb-1 text-3xl font-extrabold text-ink">Create your account</Text>
         <Text className="mb-8 text-base text-ink/60">Start keeping yourself accountable.</Text>
 
@@ -53,7 +50,7 @@ export default function SignUp() {
             onChangeText={setEmail}
           />
           <Input
-            placeholder="Password"
+            placeholder="Password (min 6 characters)"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -75,6 +72,6 @@ export default function SignUp() {
           </Link>
         </View>
       </View>
-    </SafeAreaView>
+    </FormScreen>
   );
 }
