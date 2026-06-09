@@ -42,11 +42,16 @@ export default function CaseDetail() {
             <Pressable onPress={() => router.back()} hitSlop={10}>
               <Text className="text-base text-blueberry">‹ Back</Text>
             </Pressable>
-            {caseRow && (
-              <Pressable onPress={() => router.push(`/edit-case/${caseId}`)} hitSlop={10}>
-                <Text className="text-base font-semibold text-blueberry">Edit</Text>
+            <View className="flex-row gap-4">
+              <Pressable onPress={() => router.push(`/case-council/${caseId}`)} hitSlop={10}>
+                <Text className="text-base font-semibold text-blueberry">👥 Council</Text>
               </Pressable>
-            )}
+              {caseRow && (
+                <Pressable onPress={() => router.push(`/edit-case/${caseId}`)} hitSlop={10}>
+                  <Text className="text-base font-semibold text-blueberry">Edit</Text>
+                </Pressable>
+              )}
+            </View>
           </View>
 
           <View className="mb-4 flex-row items-center">
