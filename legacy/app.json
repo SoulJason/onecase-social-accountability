@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "OneCase",
+    "description": "Social Accountability With Friends",
+    "slug": "onecase",
+    "version": "1.0.2",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 30
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "requireFullScreen": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to take photos to upload to their user profile",
+        "NSPhotoLibraryUsageDescription": "This app uses the photo library to use existing images to upload to their user profile",
+        "NSContactsUsageDescription": "This app uses the user's contacts so the user can refer contacts to use the app"
+      },
+      "bundleIdentifier": "com.onecase.onecase",
+      "buildNumber": "1.0.1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "googleServicesFile": "./google-services.json",
+      "package": "com.onecase.onecase",
+      "versionCode": 14,
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "READ_CONTACTS"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [["expo-notifications"], "expo-updates", "sentry-expo"],
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "onecase",
+            "project": "onecase",
+            "authToken": "c4a74b77b7744aab8d8d0e14208ea6e06745c8d340104361a5c43e622caa0e3e"
+          }
+        }
+      ]
+    }
+  }
+}

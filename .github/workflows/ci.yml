@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # No lockfile is committed yet for the v2 app; install fresh.
+      # --legacy-peer-deps avoids the peer-dependency conflicts common across
+      # the Expo/React-Native ecosystem. Switch to `npm ci` once a lockfile
+      # is committed (after running `npx expo install --fix` locally).
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint

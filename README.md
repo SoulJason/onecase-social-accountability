@@ -1,57 +1,57 @@
-# OneCase Mobile
+# OneCase
 
-**Social Accountability With Friends** — a React Native mobile app where you
-commit to tasks, "clock in" to work on them with a live timer, and your friends
-(your "council") keep you accountable. Leave the app mid-session and you
-auto-clock-out — and your friends get notified you bailed.
+**Social accountability with friends.** Commit to tasks, clock in with a live
+timer, and let your council keep you honest — leave the app mid-session and you
+fail, and your friends find out.
 
-## Technology
+This is the **v2 rebuild**. See [`docs/REBUILD_PLAN.md`](docs/REBUILD_PLAN.md)
+for the full plan and [`docs/SETUP.md`](docs/SETUP.md) to get it running.
 
-- **Mobile app:** React Native + Expo (SDK 41), TypeScript
-- **Backend:** Supabase (Postgres database, Auth, Storage) — the app talks to it directly
-- **Custom API:** Serverless Framework on AWS Lambda (Node/Express) for custom
-  login, password-reset OTP, and "you failed" push notifications (see `serverless/`)
-- **Other:** React Query (data layer), Sentry (crash reporting), Mixpanel (analytics), Expo Notifications (push)
+## Tech stack
+
+- **App:** Expo (SDK 52) + Expo Router + TypeScript
+- **Styling:** NativeWind (Tailwind for React Native)
+- **Backend:** Supabase (Postgres + Auth + Storage + Realtime + Edge Functions)
+- **Data layer:** TanStack Query
+- **Auth:** Google · Apple · email + password (no SMS)
+- **Analytics/errors:** PostHog · Sentry *(added later)*
 
 ## Project layout
 
 ```
+app/                 Expo Router routes (file = screen)
+  _layout.tsx        Root providers (Query, gestures, safe-area)
+  index.tsx          Landing
 src/
-  screens/      ~50 screens (auth, onboarding, cases, tasks, council, etc.)
-  components/    Reusable UI
-  queries/      Data reads (React Query hooks over Supabase)
-  mutations/    Data writes (React Query hooks over Supabase)
-  lib/supabase/ Supabase client + data-access helpers
-  navigation/   React Navigation stacks/tabs
-  providers/    User/auth + analytics context
-database.sql    Full Postgres schema (run this against a Supabase project)
-serverless/     AWS Lambda API
+  components/ui/     Reusable UI primitives
+  lib/               supabase client + generated DB types
+  theme/             design tokens
+supabase/
+  migrations/        SQL schema (with Row-Level Security)
+  seed.sql           demo data for local dev
+docs/                rebuild plan, setup guide, clock-in demo
+legacy/              the original v1 app, archived for reference
 ```
 
-## Local development setup
+## Quick start
 
-> Requires Node.js, Yarn, and the Expo tooling. To run on a device, install the
-> **Expo Go** app (note: this project targets the SDK 41 era; a modern Expo Go
-> may not load it — see "Known constraints" below).
+```bash
+npm install            # or: yarn
+npx expo install --fix # align native deps to the Expo SDK
+cp .env.example .env    # then paste your Supabase URL + anon key
+npm start              # open in Expo Go / a simulator
+```
 
-1. Clone the repository
-2. From the repo root, run `yarn` to install dependencies
-3. Copy `.env.example` to `.env` and fill in your Supabase values
-4. Run `yarn start` to start the Expo dev server
-5. Open the app in the iOS Simulator (`i`), Android emulator (`a`), or Expo Go
+Full walkthrough (including the free accounts you'll need) is in
+[`docs/SETUP.md`](docs/SETUP.md).
 
-### Backend (Supabase)
+## Scripts
 
-The app needs a Supabase project. To stand up a fresh one:
-
-1. Create a project at https://supabase.com
-2. Run `database.sql` in the Supabase SQL editor to create the schema
-3. Put the project URL and anon key into `.env` (the `*_DEV` vars are used in
-   local development)
-
-## Known constraints
-
-This codebase targets a 2021-era stack (Expo SDK 41, React Native 0.63,
-React 16, `@supabase/supabase-js` v1). Modern Expo Go and tooling may not run it
-unmodified; getting it running locally may require matching legacy tooling, and
-a from-scratch modernization is recommended for ongoing development.
+| Command | What it does |
+|---|---|
+| `npm start` | Start the Expo dev server |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
+| `npm run db:push` | Apply migrations to your Supabase project |
+| `npm run generate-types` | Regenerate `src/lib/database.types.ts` from the DB |

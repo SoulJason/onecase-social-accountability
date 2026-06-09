@@ -1,15 +1,32 @@
+# dependencies
 node_modules/
+
+# Expo
 .expo/
-npm-debug.*
+dist/
+web-build/
+expo-env.d.ts
+
+# native
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
-web-build/
+
+# Supabase (local stack)
+supabase/.branches
+supabase/.temp
+
+# env / secrets
+.env
+.env.local
+.env*.local
+
+# logs
+npm-debug.*
+yarn-error.*
 
 # macOS
 .DS_Store
-
-.env
