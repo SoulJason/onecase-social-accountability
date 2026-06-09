@@ -26,6 +26,18 @@ export function useCases() {
   });
 }
 
+export function useCase(id: number) {
+  return useQuery({
+    queryKey: ["case", id],
+    queryFn: async (): Promise<CaseRow | null> => {
+      const { data, error } = await supabase.from("cases").select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      return (data as CaseRow) ?? null;
+    },
+    enabled: Number.isFinite(id),
+  });
+}
+
 export function useCreateCase() {
   const qc = useQueryClient();
   return useMutation({
@@ -41,6 +53,32 @@ export function useCreateCase() {
         .single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["cases"] }),
+  });
+}
+
+export function useUpdateCase() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: number; title: string; emoji: string; color: string }) => {
+      const { id, ...fields } = input;
+      const { error } = await supabase.from("cases").update(fields).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      qc.invalidateQueries({ queryKey: ["case", vars.id] });
+    },
+  });
+}
+
+export function useDeleteCase() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("cases").delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["cases"] }),
   });

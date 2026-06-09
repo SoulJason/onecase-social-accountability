@@ -29,6 +29,18 @@ export function useTasks(caseId: number) {
   });
 }
 
+export function useTask(id: number) {
+  return useQuery({
+    queryKey: ["task", id],
+    queryFn: async (): Promise<TaskRow | null> => {
+      const { data, error } = await supabase.from("tasks").select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      return (data as TaskRow) ?? null;
+    },
+    enabled: Number.isFinite(id),
+  });
+}
+
 export function useCreateTask(caseId: number) {
   const qc = useQueryClient();
   return useMutation({
@@ -51,5 +63,31 @@ export function useCreateTask(caseId: number) {
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks", caseId] }),
+  });
+}
+
+export function useUpdateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: number; title?: string; progress?: number }) => {
+      const { id, ...fields } = input;
+      const { error } = await supabase.from("tasks").update(fields).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["task", vars.id] });
+    },
+  });
+}
+
+export function useDeleteTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
 }

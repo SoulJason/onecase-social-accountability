@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useCase } from "@/api/cases";
 import { useCreateTask, useTasks } from "@/api/tasks";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -20,6 +21,7 @@ export default function CaseDetail() {
   const caseId = Number(id);
   const router = useRouter();
 
+  const { data: caseRow } = useCase(caseId);
   const { data: tasks, isLoading } = useTasks(caseId);
   const createTask = useCreateTask(caseId);
   const [title, setTitle] = useState("");
@@ -36,11 +38,31 @@ export default function CaseDetail() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View className="flex-1 px-6 pt-4">
-          <Pressable onPress={() => router.back()} className="mb-2" hitSlop={10}>
-            <Text className="text-base text-blueberry">‹ Back</Text>
-          </Pressable>
-          <Text className="mb-1 text-2xl font-extrabold text-ink">Tasks</Text>
-          <Text className="mb-4 text-sm text-ink/50">Tap a task to clock in.</Text>
+          <View className="mb-4 flex-row items-center justify-between">
+            <Pressable onPress={() => router.back()} hitSlop={10}>
+              <Text className="text-base text-blueberry">‹ Back</Text>
+            </Pressable>
+            {caseRow && (
+              <Pressable onPress={() => router.push(`/edit-case/${caseId}`)} hitSlop={10}>
+                <Text className="text-base font-semibold text-blueberry">Edit</Text>
+              </Pressable>
+            )}
+          </View>
+
+          <View className="mb-4 flex-row items-center">
+            {caseRow && (
+              <View
+                className="mr-3 h-12 w-12 items-center justify-center rounded-xl"
+                style={{ backgroundColor: caseRow.color }}
+              >
+                <Text className="text-2xl">{caseRow.emoji}</Text>
+              </View>
+            )}
+            <Text className="text-2xl font-extrabold text-ink">
+              {caseRow?.title ?? "Tasks"}
+            </Text>
+          </View>
+          <Text className="mb-4 text-sm text-ink/50">Tap a task to clock in · ⋯ to edit.</Text>
 
           {isLoading ? (
             <ActivityIndicator color="#7189FF" style={{ marginTop: 24 }} />
@@ -72,6 +94,13 @@ export default function CaseDetail() {
                   <View className="flex-row items-center justify-between">
                     <Text className="flex-1 text-base font-semibold text-ink">{item.title}</Text>
                     <Text className="ml-2 text-xl">⏰</Text>
+                    <Pressable
+                      onPress={() => router.push(`/edit-task/${item.id}`)}
+                      hitSlop={12}
+                      className="ml-3"
+                    >
+                      <Text className="text-xl text-ink/40">⋯</Text>
+                    </Pressable>
                   </View>
                   <View className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ink/10">
                     <View
