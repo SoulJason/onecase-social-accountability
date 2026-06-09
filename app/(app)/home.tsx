@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useCases } from "@/api/cases";
+import { useUnreadCount } from "@/api/notifications";
 import { useMyProfile } from "@/api/profile";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +12,7 @@ export default function Home() {
   const router = useRouter();
   const { data: cases, isLoading, isError, error } = useCases();
   const { data: me } = useMyProfile();
+  const { data: unread } = useUnreadCount();
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
@@ -18,6 +20,14 @@ export default function Home() {
         <View className="flex-row items-center justify-between">
           <Text className="text-3xl font-extrabold text-blueberry">OneCase</Text>
           <View className="flex-row items-center gap-4">
+            <Pressable onPress={() => router.push("/notifications")} hitSlop={10}>
+              <Text className="text-2xl">🔔</Text>
+              {unread != null && unread > 0 && (
+                <View className="absolute -right-1 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1">
+                  <Text className="text-[10px] font-bold text-white">{unread > 9 ? "9+" : unread}</Text>
+                </View>
+              )}
+            </Pressable>
             <Pressable onPress={() => router.push("/friends")} hitSlop={10}>
               <Text className="text-base font-semibold text-blueberry">Friends</Text>
             </Pressable>
