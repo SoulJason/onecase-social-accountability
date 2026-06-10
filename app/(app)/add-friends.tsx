@@ -1,9 +1,22 @@
 import { useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useFriends, useSendFriendRequest } from "@/api/friends";
+import {
+  useAcceptFriendRequest,
+  useFriendshipStatuses,
+  useSendFriendRequest,
+} from "@/api/friends";
 import { useSearchUsers, type Profile } from "@/api/profile";
 import { Avatar } from "@/components/ui/Avatar";
 import { Input } from "@/components/ui/Input";
@@ -17,11 +30,16 @@ export default function AddFriends() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const { data: results, isFetching } = useSearchUsers(query);
-  const { data: friends } = useFriends();
+  const { data: statuses } = useFriendshipStatuses();
   const sendRequest = useSendFriendRequest();
-  const [sent, setSent] = useState<Record<string, boolean>>({});
+  const acceptRequest = useAcceptFriendRequest();
 
-  const friendIds = new Set((friends ?? []).map((f) => f.id));
+  function add(id: string) {
+    sendRequest.mutate(id, {
+      onError: (e) =>
+        Alert.alert("Couldn't send request", (e as Error).message || "Please try again."),
+    });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
@@ -57,11 +75,12 @@ export default function AddFriends() {
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{ gap: 8, paddingBottom: 24 }}
                 ListEmptyComponent={
-                  <Text className="mt-6 text-center text-ink/50">No users found.</Text>
+                  <Text className="mt-6 text-center text-ink/50">
+                    No users found. Make sure they&apos;ve set a username.
+                  </Text>
                 }
                 renderItem={({ item }) => {
-                  const already = friendIds.has(item.id);
-                  const requested = sent[item.id];
+                  const rel = statuses?.[item.id];
                   return (
                     <View className="flex-row items-center rounded-2xl bg-white p-3">
                       <Avatar name={item.username ?? item.first_name} size={40} />
@@ -71,17 +90,21 @@ export default function AddFriends() {
                           <Text className="text-xs text-ink/40">@{item.username}</Text>
                         )}
                       </View>
-                      {already ? (
+
+                      {rel === "friends" ? (
                         <Text className="text-sm text-ink/40">Friends</Text>
-                      ) : requested ? (
+                      ) : rel === "outgoing" ? (
                         <Text className="text-sm text-ink/40">Requested</Text>
+                      ) : rel === "incoming" ? (
+                        <Pressable
+                          onPress={() => acceptRequest.mutate(item.id)}
+                          className="rounded-xl bg-apple px-4 py-2"
+                        >
+                          <Text className="font-semibold text-white">Accept</Text>
+                        </Pressable>
                       ) : (
                         <Pressable
-                          onPress={() =>
-                            sendRequest.mutate(item.id, {
-                              onSuccess: () => setSent((s) => ({ ...s, [item.id]: true })),
-                            })
-                          }
+                          onPress={() => add(item.id)}
                           className="rounded-xl bg-blueberry px-4 py-2"
                         >
                           <Text className="font-semibold text-white">Add</Text>

@@ -19,6 +19,31 @@ function orderedPair(a: string, b: string): [string, string] {
 function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ["friends"] });
   qc.invalidateQueries({ queryKey: ["incoming-requests"] });
+  qc.invalidateQueries({ queryKey: ["friendship-statuses"] });
+}
+
+export type RelStatus = "friends" | "outgoing" | "incoming";
+
+/** Map of other-user-id → my relationship with them (for the add-friends screen). */
+export function useFriendshipStatuses() {
+  return useQuery({
+    queryKey: ["friendship-statuses"],
+    queryFn: async (): Promise<Record<string, RelStatus>> => {
+      const me = await currentUserId();
+      const { data, error } = await supabase
+        .from("friendships")
+        .select("*")
+        .or(`user_low.eq.${me},user_high.eq.${me}`);
+      if (error) throw error;
+      const map: Record<string, RelStatus> = {};
+      for (const r of (data ?? []) as FriendshipRow[]) {
+        const other = r.user_low === me ? r.user_high : r.user_low;
+        if (r.status === "accepted") map[other] = "friends";
+        else if (r.status === "pending") map[other] = r.requested_by === me ? "outgoing" : "incoming";
+      }
+      return map;
+    },
+  });
 }
 
 export function useFriends() {
