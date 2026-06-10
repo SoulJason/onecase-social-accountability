@@ -10,11 +10,13 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { useCase } from "@/api/cases";
 import { useCreateTask, useTasks } from "@/api/tasks";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 
 export default function CaseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,39 +84,38 @@ export default function CaseDetail() {
               ListEmptyComponent={
                 <Text className="mt-8 text-center text-ink/50">No tasks yet. Add one below.</Text>
               }
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/clock-in/[taskId]",
-                      params: {
-                        taskId: String(item.id),
-                        title: item.title,
-                        progress: String(item.progress),
-                      },
-                    })
-                  }
-                  className="rounded-2xl bg-white p-4 active:opacity-70"
-                >
-                  <View className="flex-row items-center justify-between">
-                    <Text className="flex-1 text-base font-semibold text-ink">{item.title}</Text>
-                    <Text className="ml-2 text-xl">⏰</Text>
-                    <Pressable
-                      onPress={() => router.push(`/edit-task/${item.id}`)}
-                      hitSlop={12}
-                      className="ml-3"
-                    >
-                      <Text className="text-xl text-ink/40">⋯</Text>
-                    </Pressable>
-                  </View>
-                  <View className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ink/10">
-                    <View
-                      className="h-2 rounded-full bg-apple"
-                      style={{ width: `${Math.max(0, Math.min(100, Math.round(item.progress)))}%` }}
-                    />
-                  </View>
-                  <Text className="mt-1 text-xs text-ink/40">{Math.round(item.progress)}% done</Text>
-                </Pressable>
+              renderItem={({ item, index }) => (
+                <Animated.View entering={FadeInDown.duration(250).delay(Math.min(index * 50, 250))}>
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/clock-in/[taskId]",
+                        params: {
+                          taskId: String(item.id),
+                          title: item.title,
+                          progress: String(item.progress),
+                        },
+                      })
+                    }
+                    className="rounded-2xl bg-white p-4 active:opacity-70"
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text className="flex-1 text-base font-semibold text-ink">{item.title}</Text>
+                      <Text className="ml-2 text-xl">⏰</Text>
+                      <Pressable
+                        onPress={() => router.push(`/edit-task/${item.id}`)}
+                        hitSlop={12}
+                        className="ml-3"
+                      >
+                        <Text className="text-xl text-ink/40">⋯</Text>
+                      </Pressable>
+                    </View>
+                    <View className="mt-3">
+                      <ProgressBar progress={item.progress} />
+                    </View>
+                    <Text className="mt-1 text-xs text-ink/40">{Math.round(item.progress)}% done</Text>
+                  </Pressable>
+                </Animated.View>
               )}
             />
           )}

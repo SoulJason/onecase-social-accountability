@@ -1,4 +1,5 @@
 import { Pressable, Text } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 type Variant = "primary" | "danger" | "secondary";
 
@@ -16,15 +17,26 @@ const VARIANT_BG: Record<Variant, string> = {
 };
 
 export function Button({ label, onPress, variant = "primary", disabled }: Props) {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      className={`${VARIANT_BG[variant]} rounded-2xl py-4 active:opacity-80 ${
-        disabled ? "opacity-40" : ""
-      }`}
-    >
-      <Text className="text-center text-lg font-bold text-white">{label}</Text>
-    </Pressable>
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        onPress={onPress}
+        disabled={disabled}
+        onPressIn={() => {
+          scale.value = withSpring(0.96, { damping: 20, stiffness: 400 });
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1, { damping: 14, stiffness: 300 });
+        }}
+        className={`${VARIANT_BG[variant]} rounded-2xl py-4 ${disabled ? "opacity-40" : ""}`}
+      >
+        <Text className="text-center text-lg font-bold text-white">{label}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }

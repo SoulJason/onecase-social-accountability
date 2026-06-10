@@ -4,9 +4,24 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useQueryClient } from "@tanstack/react-query";
+import Svg, { Circle } from "react-native-svg";
+import Animated, {
+  Easing,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
 import { endSession, logProgress, startSession } from "@/api/clockins";
 import { Button } from "@/components/ui/Button";
+import { Confetti } from "@/components/ui/Confetti";
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const RING_SIZE = 260;
+const RING_R = 115;
+const RING_CIRC = 2 * Math.PI * RING_R;
 
 const DURATIONS = [
   { label: "15s", s: 15 },
@@ -52,6 +67,28 @@ export default function ClockIn() {
   const ticker = useRef<ReturnType<typeof setInterval> | null>(null);
   const failKind = useRef<"left" | "gaveup">("left");
 
+  // Juice: the timer ring drains as time passes; the fail screen shakes.
+  const ringProgress = useSharedValue(1);
+  const shakeX = useSharedValue(0);
+  const ringProps = useAnimatedProps(() => ({
+    strokeDashoffset: RING_CIRC * (1 - ringProgress.value),
+  }));
+  const shakeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: shakeX.value }],
+  }));
+
+  useEffect(() => {
+    if (phase === "fail") {
+      shakeX.value = withSequence(
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 90 }),
+        withTiming(-8, { duration: 80 }),
+        withTiming(6, { duration: 70 }),
+        withTiming(0, { duration: 60 }),
+      );
+    }
+  }, [phase, shakeX]);
+
   function setPhaseBoth(p: Phase) {
     phaseRef.current = p;
     setPhase(p);
@@ -91,6 +128,10 @@ export default function ClockIn() {
       }
     } else {
       const r = Math.round((endAt.current - now) / 1000);
+      ringProgress.value = withTiming(Math.max(r, 0) / plannedRef.current, {
+        duration: 260,
+        easing: Easing.linear,
+      });
       if (r > 0) {
         setRemaining(r);
       } else {
@@ -109,6 +150,7 @@ export default function ClockIn() {
       started.current = false;
       setRemaining(planned);
       setGraceLeft(10);
+      ringProgress.value = 1;
       graceEndAt.current = Date.now() + 10_000;
       setPhaseBoth("grace");
       clearTicker();
@@ -121,6 +163,7 @@ export default function ClockIn() {
   async function handleCancel() {
     clearTicker();
     started.current = false;
+    ringProgress.value = 1;
     setPhaseBoth("idle");
     const id = sessionId.current;
     sessionId.current = null;
@@ -191,6 +234,7 @@ export default function ClockIn() {
             <Button label={saving ? "Saving…" : "Save progress"} onPress={save} disabled={saving} />
           </View>
         </View>
+        <Confetti />
       </SafeAreaView>
     );
   }
@@ -199,10 +243,12 @@ export default function ClockIn() {
     return (
       <SafeAreaView className="flex-1 bg-cream">
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-7xl">😬</Text>
-          <Text className="mt-3 text-3xl font-extrabold text-ink">
-            {failKind.current === "gaveup" ? "You gave up early" : "You left the app!"}
-          </Text>
+          <Animated.View style={shakeStyle} className="items-center">
+            <Text className="text-7xl">😬</Text>
+            <Text className="mt-3 text-3xl font-extrabold text-ink">
+              {failKind.current === "gaveup" ? "You gave up early" : "You left the app!"}
+            </Text>
+          </Animated.View>
           <Text className="mt-2 text-center text-ink/60">
             {failKind.current === "gaveup"
               ? "You clocked out before the timer finished."
@@ -222,7 +268,6 @@ export default function ClockIn() {
 
   // idle / grace / tracking share the timer layout
   const isClocked = phase === "grace" || phase === "tracking";
-  const frac = phase === "tracking" ? remaining / Math.max(1, planned) : 1;
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
@@ -243,16 +288,47 @@ export default function ClockIn() {
                 : "Pick a session length"}
           </Text>
 
-          <Text className="text-7xl font-extrabold text-ink" style={{ fontVariant: ["tabular-nums"] }}>
-            {fmt(phase === "tracking" ? remaining : planned)}
-          </Text>
-
-          {/* progress bar while tracking */}
-          {phase === "tracking" && (
-            <View className="mt-6 h-2 w-64 overflow-hidden rounded-full bg-ink/10">
-              <View className="h-2 rounded-full bg-apple" style={{ width: `${Math.round(frac * 100)}%` }} />
-            </View>
-          )}
+          {/* timer ring */}
+          <View
+            style={{
+              width: RING_SIZE,
+              height: RING_SIZE,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Svg
+              width={RING_SIZE}
+              height={RING_SIZE}
+              style={{ position: "absolute", transform: [{ rotate: "-90deg" }] }}
+            >
+              <Circle
+                cx={RING_SIZE / 2}
+                cy={RING_SIZE / 2}
+                r={RING_R}
+                stroke="#ECECEC"
+                strokeWidth={14}
+                fill="none"
+              />
+              <AnimatedCircle
+                cx={RING_SIZE / 2}
+                cy={RING_SIZE / 2}
+                r={RING_R}
+                stroke={phase === "grace" ? "#758ECD" : "#96DE90"}
+                strokeWidth={14}
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray={`${RING_CIRC}`}
+                animatedProps={ringProps}
+              />
+            </Svg>
+            <Text
+              className="text-6xl font-extrabold text-ink"
+              style={{ fontVariant: ["tabular-nums"] }}
+            >
+              {fmt(phase === "tracking" ? remaining : planned)}
+            </Text>
+          </View>
 
           {/* duration chips while idle */}
           {phase === "idle" && (

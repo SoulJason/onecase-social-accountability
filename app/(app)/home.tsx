@@ -1,18 +1,56 @@
+import { useState } from "react";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, Pressable, SectionList, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  SectionList,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { useQueryClient } from "@tanstack/react-query";
 
+import { useCouncilActivity } from "@/api/activity";
 import { useCases, type CaseRow } from "@/api/cases";
 import { useUnreadCount } from "@/api/notifications";
 import { useMyProfile } from "@/api/profile";
+import { ActivityRow } from "@/components/ActivityRow";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 
+function ActivityPreview() {
+  const router = useRouter();
+  const { data: activity } = useCouncilActivity();
+
+  if (!activity || activity.length === 0) return null;
+  return (
+    <View className="mt-5">
+      <View className="mb-2 flex-row items-center justify-between">
+        <Text className="text-xs font-semibold uppercase tracking-wide text-ink/40">
+          Council activity
+        </Text>
+        <Pressable onPress={() => router.push("/activity")} hitSlop={8}>
+          <Text className="text-xs font-semibold text-blueberry">See all →</Text>
+        </Pressable>
+      </View>
+      <View className="gap-2">
+        {activity.slice(0, 3).map((a) => (
+          <ActivityRow key={a.id} item={a} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
+  const qc = useQueryClient();
   const { data: cases, isLoading: casesLoading, isError, error } = useCases();
   const { data: me, isLoading: meLoading } = useMyProfile();
   const { data: unread } = useUnreadCount();
+  const [refreshing, setRefreshing] = useState(false);
 
   const isLoading = casesLoading || meLoading;
   const mine = me ? (cases ?? []).filter((c) => c.owner_id === me.id) : [];
@@ -23,20 +61,32 @@ export default function Home() {
     ...(shared.length > 0 ? [{ title: "Shared with you", data: shared }] : []),
   ];
 
-  function renderCase({ item }: { item: CaseRow }) {
+  async function onRefresh() {
+    setRefreshing(true);
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["cases"] }),
+      qc.invalidateQueries({ queryKey: ["council-activity"] }),
+      qc.invalidateQueries({ queryKey: ["notifications-unread"] }),
+    ]);
+    setRefreshing(false);
+  }
+
+  function renderCase({ item, index }: { item: CaseRow; index: number }) {
     return (
-      <Pressable
-        onPress={() => router.push(`/case/${item.id}`)}
-        className="mb-3 flex-row items-center rounded-2xl bg-white p-4 active:opacity-70"
-      >
-        <View
-          className="h-12 w-12 items-center justify-center rounded-xl"
-          style={{ backgroundColor: item.color }}
+      <Animated.View entering={FadeInDown.duration(250).delay(Math.min(index * 50, 250))}>
+        <Pressable
+          onPress={() => router.push(`/case/${item.id}`)}
+          className="mb-3 flex-row items-center rounded-2xl bg-white p-4 active:opacity-70"
         >
-          <Text className="text-2xl">{item.emoji}</Text>
-        </View>
-        <Text className="ml-4 flex-1 text-lg font-semibold text-ink">{item.title}</Text>
-      </Pressable>
+          <View
+            className="h-12 w-12 items-center justify-center rounded-xl"
+            style={{ backgroundColor: item.color }}
+          >
+            <Text className="text-2xl">{item.emoji}</Text>
+          </View>
+          <Text className="ml-4 flex-1 text-lg font-semibold text-ink">{item.title}</Text>
+        </Pressable>
+      </Animated.View>
     );
   }
 
@@ -86,6 +136,10 @@ export default function Home() {
             keyExtractor={(c) => String(c.id)}
             contentContainerStyle={{ paddingBottom: 24 }}
             stickySectionHeadersEnabled={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7189FF" />
+            }
+            ListHeaderComponent={<ActivityPreview />}
             renderSectionHeader={({ section }) =>
               section.data.length > 0 ? (
                 <Text className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-ink/40">
