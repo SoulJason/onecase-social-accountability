@@ -21,10 +21,12 @@ export default function Home() {
           <Text className="text-3xl font-extrabold text-blueberry">OneCase</Text>
           <View className="flex-row items-center gap-4">
             <Pressable onPress={() => router.push("/notifications")} hitSlop={10}>
-              <Text className="text-2xl">🔔</Text>
+              <Text className="text-2xl">{unread != null && unread > 0 ? "🔔" : "🔕"}</Text>
               {unread != null && unread > 0 && (
-                <View className="absolute -right-1 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1">
-                  <Text className="text-[10px] font-bold text-white">{unread > 9 ? "9+" : unread}</Text>
+                <View className="absolute -right-2 -top-2 h-5 min-w-5 items-center justify-center rounded-full border-2 border-cream bg-danger px-1">
+                  <Text className="text-[11px] font-bold text-white">
+                    {unread > 9 ? "9+" : unread}
+                  </Text>
                 </View>
               )}
             </Pressable>
