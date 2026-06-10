@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OneCase — Design Explorations v1</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#edeae3;padding:28px 16px 60px;color:#1a1a1a;}
+  .intro{max-width:760px;margin:0 auto 30px;}
+  .intro h1{font-size:26px;font-weight:800;margin-bottom:8px;}
+  .intro p{color:#555;font-size:14px;line-height:1.6;}
+  .intro .how{margin-top:10px;background:#fff;border-radius:12px;padding:12px 14px;font-size:13px;color:#444;line-height:1.6;}
+  .board{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start;}
+  .concept{width:340px;}
+  .concept h2{font-size:16px;font-weight:800;margin-bottom:2px;}
+  .concept .sub{font-size:12px;color:#777;margin-bottom:10px;line-height:1.5;}
+  .phone{width:340px;height:710px;border-radius:42px;border:10px solid #111;overflow:hidden;position:relative;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.18);}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;}
+  .notes{margin-top:10px;font-size:12px;color:#555;line-height:1.6;background:#fff;border-radius:12px;padding:10px 12px;}
+  .notes b{color:#1a1a1a;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;background:#1a1a1a;color:#fff;border-radius:99px;padding:3px 9px;margin-bottom:6px;}
+
+  /* shared bits */
+  .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;}
+  .bar{height:7px;border-radius:99px;background:rgba(0,0,0,.08);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:99px;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.25)}}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:#FF5858;animation:pulse 1.2s infinite;}
+
+  /* ============ A: TAB BAR CLASSIC ============ */
+  .a .screen{background:#FFFCF7;}
+  .a .hdr{padding:54px 20px 6px;display:flex;justify-content:space-between;align-items:flex-end;}
+  .a .hdr .hi{font-size:13px;color:#999;}
+  .a .hdr .name{font-size:24px;font-weight:800;color:#1a1a1a;}
+  .a .bell{font-size:22px;position:relative;}
+  .a .bell::after{content:"2";position:absolute;top:-6px;right:-8px;background:#FF5858;color:#fff;font-size:10px;font-weight:700;border-radius:99px;padding:1px 5px;border:2px solid #FFFCF7;}
+  .a .live{margin:12px 16px 0;background:#fff;border:1.5px solid #FFE2E2;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;}
+  .a .sec{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#b5b0a6;margin:18px 20px 8px;}
+  .a .card{margin:0 16px 10px;background:#fff;border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+  .a .emoji{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .a .card .t{font-weight:700;font-size:15px;}
+  .a .card .meta{flex:1;}
+  .a .card .bar{margin-top:8px;}
+  .a .council{display:flex;}
+  .a .council .avatar{width:22px;height:22px;font-size:10px;border:2px solid #fff;margin-left:-7px;}
+  .a .tabs{margin-top:auto;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-around;padding:10px 8px 26px;position:relative;}
+  .a .tab{text-align:center;font-size:10px;color:#b3aea4;width:56px;}
+  .a .tab .ic{font-size:21px;display:block;margin-bottom:2px;}
+  .a .tab.on{color:#7189FF;font-weight:700;}
+  .a .fab{width:58px;height:58px;border-radius:50%;background:#96DE90;display:flex;align-items:center;justify-content:center;font-size:26px;margin-top:-34px;box-shadow:0 6px 16px rgba(150,222,144,.55);border:4px solid #FFFCF7;}
+
+  /* ============ B: FEED-FIRST SOCIAL ============ */
+  .b .screen{background:#fff;}
+  .b .hdr{padding:54px 18px 10px;display:flex;justify-content:space-between;align-items:center;}
+  .b .logo{font-weight:900;font-size:20px;letter-spacing:-.5px;}
+  .b .stories{display:flex;gap:14px;padding:8px 18px 14px;border-bottom:1px solid #f1f1f1;}
+  .b .story{text-align:center;font-size:10px;color:#666;width:58px;}
+  .b .story .ring{width:56px;height:56px;border-radius:50%;padding:3px;margin:0 auto 4px;}
+  .b .story .ring.live{background:conic-gradient(#FF5858,#FF8A65,#FF5858);animation:none;}
+  .b .story .ring.idle{background:#e8e8e8;}
+  .b .story .avatar{width:100%;height:100%;font-size:18px;border:2px solid #fff;}
+  .b .story .lbl-live{color:#FF5858;font-weight:800;}
+  .b .post{padding:14px 18px;border-bottom:1px solid #f4f4f4;display:flex;gap:12px;}
+  .b .post .avatar{width:42px;height:42px;font-size:16px;flex-shrink:0;}
+  .b .post .txt{font-size:14px;line-height:1.45;}
+  .b .post .txt b{font-weight:800;}
+  .b .post .meta{font-size:11px;color:#999;margin-top:3px;}
+  .b .post .acts{display:flex;gap:14px;margin-top:8px;font-size:12px;color:#666;}
+  .b .post .acts span{background:#f5f5f5;border-radius:99px;padding:4px 11px;}
+  .b .tabs{margin-top:auto;border-top:1px solid #eee;display:flex;justify-content:space-around;padding:10px 0 26px;font-size:21px;color:#c9c9c9;}
+  .b .tabs .on{color:#111;}
+
+  /* ============ C: FOCUS RITUAL ============ */
+  .c .screen{background:linear-gradient(170deg,#191b2e 0%,#2b2350 55%,#43306b 100%);color:#fff;align-items:center;}
+  .c .hdr{padding:56px 22px 0;width:100%;display:flex;justify-content:space-between;font-size:18px;opacity:.75;}
+  .c .task{margin-top:34px;font-size:13px;letter-spacing:2px;text-transform:uppercase;opacity:.65;}
+  .c .taskname{font-size:21px;font-weight:700;margin-top:6px;}
+  .c .ring{width:218px;height:218px;border-radius:50%;margin-top:30px;display:flex;align-items:center;justify-content:center;background:
+    conic-gradient(#9F8FFF 0 65%, rgba(255,255,255,.12) 65% 100%);}
+  .c .ring .inner{width:186px;height:186px;border-radius:50%;background:#231f3d;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .c .time{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .c .left{font-size:11px;opacity:.55;margin-top:2px;}
+  .c .slide{margin-top:34px;width:240px;background:rgba(255,255,255,.12);border-radius:99px;padding:6px;display:flex;align-items:center;gap:10px;font-size:13px;}
+  .c .knob{width:42px;height:42px;border-radius:50%;background:#fff;color:#2b2350;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .c .slide span{opacity:.8;}
+  .c .chips{margin-top:auto;margin-bottom:46px;display:flex;gap:8px;padding:0 18px;width:100%;overflow:hidden;}
+  .c .chip{background:rgba(255,255,255,.1);border-radius:99px;padding:9px 14px;font-size:13px;white-space:nowrap;}
+  .c .chip.on{background:rgba(255,255,255,.95);color:#2b2350;font-weight:700;}
+
+  /* ============ D: COACH & GAME ============ */
+  .d .screen{background:#F4F8FF;}
+  .d .hdr{padding:54px 18px 10px;display:flex;justify-content:space-between;align-items:center;}
+  .d .streak{background:#fff;border:2.5px solid #FFB037;border-radius:16px;padding:7px 13px;font-weight:800;font-size:15px;color:#E8920C;box-shadow:0 3px 0 #FFB037;}
+  .d .xp{margin:8px 18px 0;}
+  .d .xp .lbl{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#7189FF;margin-bottom:4px;}
+  .d .xp .bar{height:12px;border:2px solid #C9D4FF;background:#fff;}
+  .d .xp .bar i{background:linear-gradient(90deg,#7189FF,#9F8FFF);width:62%;}
+  .d .quest{margin:14px 18px 0;background:#FFE9C7;border:2.5px solid #FFB037;border-radius:18px;padding:12px 14px;font-size:13px;font-weight:700;color:#9A6400;display:flex;gap:10px;align-items:center;}
+  .d .grid{display:flex;flex-wrap:wrap;gap:12px;padding:16px 18px;}
+  .d .block{width:calc(50% - 6px);border-radius:20px;padding:14px;border:2.5px solid rgba(0,0,0,.1);box-shadow:0 4px 0 rgba(0,0,0,.12);}
+  .d .block .e{font-size:30px;}
+  .d .block .t{font-weight:800;font-size:14px;margin-top:6px;}
+  .d .block .bar{margin-top:8px;background:rgba(255,255,255,.6);}
+  .d .block .pct{font-size:11px;font-weight:800;margin-top:3px;opacity:.65;}
+  .d .tabs{margin-top:auto;background:#fff;border-top:2px solid #E4EAF8;display:flex;justify-content:space-around;padding:10px 0 26px;font-size:11px;font-weight:800;color:#9aa7c7;text-align:center;}
+  .d .tabs .ic{display:block;font-size:22px;}
+  .d .tabs .on{color:#7189FF;}
+
+  /* ============ E: CLEAN PRO ============ */
+  .e .screen{background:#FDFDFC;}
+  .e .hdr{padding:56px 22px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ECECEA;}
+  .e .logo{font-size:15px;font-weight:700;letter-spacing:-.2px;}
+  .e .hdr .right{display:flex;gap:14px;font-size:15px;color:#999;}
+  .e .sec{padding:18px 22px 6px;font-size:11px;font-weight:600;color:#A9A9A4;letter-spacing:.6px;text-transform:uppercase;}
+  .e .row{padding:13px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #F2F2EF;}
+  .e .row .e2{font-size:17px;width:24px;}
+  .e .row .t{flex:1;font-size:14.5px;font-weight:500;}
+  .e .row .pct{font-size:12px;color:#999;font-variant-numeric:tabular-nums;}
+  .e .row .chev{color:#D5D5D0;font-size:14px;}
+  .e .today .row .t{font-weight:400;}
+  .e .check{width:18px;height:18px;border-radius:6px;border:1.5px solid #D8D8D3;}
+  .e .check.done{background:#7189FF;border-color:#7189FF;position:relative;}
+  .e .check.done::after{content:"✓";color:#fff;font-size:11px;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .e .live-line{margin:14px 22px 0;font-size:12.5px;color:#666;display:flex;align-items:center;gap:7px;}
+  .e .cmd{margin:16px 22px 0;background:#F4F4F1;border-radius:10px;padding:9px 12px;font-size:13px;color:#A5A5A0;display:flex;justify-content:space-between;}
+  .e .cmd span:last-child{font-size:11px;border:1px solid #DDD;background:#fff;border-radius:5px;padding:1px 5px;}
+  .e .footer{margin-top:auto;padding:0 22px 30px;}
+  .e .newbtn{border:1px dashed #C9C9C4;border-radius:12px;padding:12px;text-align:center;font-size:13px;color:#888;}
+
+  /* ============ F: TODAY CARD STACK ============ */
+  .f .screen{background:#FFF9F2;align-items:center;}
+  .f .hdr{padding:54px 22px 0;width:100%;display:flex;justify-content:space-between;align-items:center;}
+  .f .hi{font-size:13px;color:#b3a791;}
+  .f .date{font-size:19px;font-weight:800;}
+  .f .stackwrap{margin-top:30px;position:relative;width:272px;height:330px;}
+  .f .ghost{position:absolute;left:50%;border-radius:26px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.07);}
+  .f .ghost.g1{width:230px;height:300px;top:18px;transform:translateX(-50%) rotate(-4deg);opacity:.55;}
+  .f .ghost.g2{width:248px;height:310px;top:9px;transform:translateX(-50%) rotate(3deg);opacity:.75;}
+  .f .maincard{position:absolute;left:50%;transform:translateX(-50%);width:272px;height:330px;background:#fff;border-radius:26px;box-shadow:0 16px 36px rgba(0,0,0,.12);padding:22px;display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .f .chip{background:#EAF7E8;color:#4F9D49;font-size:11px;font-weight:700;border-radius:99px;padding:5px 12px;}
+  .f .bigemoji{font-size:54px;margin-top:22px;}
+  .f .taskname{font-size:20px;font-weight:800;margin-top:12px;line-height:1.3;}
+  .f .est{font-size:12px;color:#999;margin-top:6px;}
+  .f .go{margin-top:auto;width:100%;background:#96DE90;border-radius:16px;padding:14px;font-weight:800;color:#fff;font-size:15px;}
+  .f .dots{display:flex;gap:6px;margin-top:18px;}
+  .f .dot{width:7px;height:7px;border-radius:50%;background:#E2D9CB;}
+  .f .dot.on{background:#1a1a1a;width:18px;border-radius:99px;}
+  .f .friends{margin-top:auto;margin-bottom:40px;width:100%;padding:0 22px;}
+  .f .friends .lbl{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#c4b89f;margin-bottom:8px;}
+  .f .frow{background:#fff;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:9px;font-size:12.5px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>OneCase — Layout &amp; UX Explorations <span style="font-size:13px;color:#999;font-weight:600">v1 · 6 directions</span></h1>
+  <p>Same product, six different answers to “what is OneCase when you open it?” Ignore exact colors/copy — react to <b>layout, hierarchy, and navigation</b>.</p>
+  <div class="how">💬 <b>How to give feedback:</b> reply in chat with things like “<i>B’s feed but with A’s tab bar</i>”, “<i>C for clock-in only</i>”, “<i>kill D</i>”, or “<i>show me more of E</i>”. I’ll produce a v2 board from your reactions, then build the winner into the real app.</div>
+</div>
+
+<div class="board">
+
+  <!-- ============ A ============ -->
+  <div class="concept a">
+    <span class="tag">A</span>
+    <h2>Tab Bar Classic</h2>
+    <div class="sub">Evolution of what you have. Cases first, social second. Big “Clock In” action button in the middle of the tab bar.</div>
+    <div class="phone"><div class="screen">
+      <div class="hdr">
+        <div><div class="hi">Good evening</div><div class="name">Jason 👋</div></div>
+        <div class="bell">🔔</div>
+      </div>
+      <div class="live"><span class="live-dot"></span><span><b>Sam</b> is clocked in · Run 3 miles</span></div>
+      <div class="sec">Your cases</div>
+      <div class="card"><div class="emoji" style="background:#EAF7E8">💪</div>
+        <div class="meta"><div class="t">Fitness</div><div class="bar"><i style="width:62%;background:#96DE90"></i></div></div>
+        <div class="council"><div class="avatar" style="background:#7189FF">J</div><div class="avatar" style="background:#FF8A65">A</div></div>
+      </div>
+      <div class="card"><div class="emoji" style="background:#EDF0FF">💼</div>
+        <div class="meta"><div class="t">Startup</div><div class="bar"><i style="width:30%;background:#7189FF"></i></div></div>
+        <div class="council"><div class="avatar" style="background:#BA68C8">S</div></div>
+      </div>
+      <div class="card"><div class="emoji" style="background:#FFF3E3">📚</div>
+        <div class="meta"><div class="t">Reading</div><div class="bar"><i style="width:85%;background:#FFB037"></i></div></div>
+        <div class="council"><div class="avatar" style="background:#96DE90">R</div></div>
+      </div>
+      <div class="tabs">
+        <div class="tab on"><span class="ic">⌂</span>Home</div>
+        <div class="tab"><span class="ic">⚡</span>Activity</div>
+        <div class="fab">⏰</div>
+        <div class="tab"><span class="ic">👥</span>Friends</div>
+        <div class="tab"><span class="ic">🙂</span>Profile</div>
+      </div>
+    </div></div>
+    <div class="notes"><b>First thing you see:</b> your cases + one live friend strip.<br><b>Nav:</b> 4 tabs + center Clock-In button.<br><b>Bet:</b> familiarity — lowest risk, fastest to ship.</div>
+  </div>
+
+  <!-- ============ B ============ -->
+  <div class="concept b">
+    <span class="tag">B</span>
+    <h2>Feed-First Social</h2>
+    <div class="sub">Friends ARE the app. Opens to a live feed; story-style ring shows who’s clocked in right now. Your cases live one tab over.</div>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><div class="logo">OneCase</div><div style="font-size:20px">🔔</div></div>
+      <div class="stories">
+        <div class="story"><div class="ring live"><div class="avatar" style="background:#96DE90">S</div></div><span class="lbl-live">● LIVE</span></div>
+        <div class="story"><div class="ring live"><div class="avatar" style="background:#BA68C8">R</div></div><span class="lbl-live">● LIVE</span></div>
+        <div class="story"><div class="ring idle"><div class="avatar" style="background:#7189FF">A</div></div><span>aisha</span></div>
+        <div class="story"><div class="ring idle"><div class="avatar" style="background:#FF8A65">J</div></div><span>jordan</span></div>
+        <div class="story"><div class="ring idle"><div class="avatar" style="background:#d0d0d0">+</div></div><span>add</span></div>
+      </div>
+      <div class="post"><div class="avatar" style="background:#96DE90">S</div>
+        <div><div class="txt"><b>sam</b> is clocked in on <b>Run 3 miles</b> — 18:24 left</div>
+        <div class="meta">💪 Fitness · right now</div>
+        <div class="acts"><span>👀 Watch</span><span>🔥 Cheer</span></div></div>
+      </div>
+      <div class="post"><div class="avatar" style="background:#7189FF">A</div>
+        <div><div class="txt">🎉 <b>aisha</b> crushed <b>Pitch deck v3</b></div>
+        <div class="meta">💼 Startup · 2h ago</div>
+        <div class="acts"><span>👏 Props</span><span>💬 Comment</span></div></div>
+      </div>
+      <div class="post"><div class="avatar" style="background:#FF8A65">J</div>
+        <div><div class="txt">😬 <b>jordan</b> bailed on <b>Read 20 pages</b></div>
+        <div class="meta">📚 Reading · 5h ago</div>
+        <div class="acts"><span>👉 Nudge</span><span>💬 Roast</span></div></div>
+      </div>
+      <div class="tabs"><span class="on">⚡</span><span>🗂</span><span style="font-size:26px">⊕</span><span>🔔</span><span>🙂</span></div>
+    </div></div>
+    <div class="notes"><b>First thing you see:</b> what your friends are doing — live rings on top.<br><b>Nav:</b> Feed / My cases / + / Alerts / Profile.<br><b>Bet:</b> social pressure is the product — maximize it.</div>
+  </div>
+
+  <!-- ============ C ============ -->
+  <div class="concept c">
+    <span class="tag">C</span>
+    <h2>Focus Ritual</h2>
+    <div class="sub">The timer is the home screen. Opening the app IS starting a session. Everything else is secondary chrome.</div>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><span>👥</span><span>≡</span></div>
+      <div class="task">Up next · Fitness</div>
+      <div class="taskname">Run 3 miles</div>
+      <div class="ring"><div class="inner">
+        <div class="time">25:00</div>
+        <div class="left">swipe ring to adjust</div>
+      </div></div>
+      <div class="slide"><div class="knob">⏰</div><span>slide to clock in</span></div>
+      <div class="chips">
+        <div class="chip on">💪 Fitness</div>
+        <div class="chip">💼 Startup</div>
+        <div class="chip">📚 Reading</div>
+      </div>
+    </div></div>
+    <div class="notes"><b>First thing you see:</b> a ready-to-go timer for your next task.<br><b>Nav:</b> almost none — cases as chips, social behind one icon.<br><b>Bet:</b> reduce friction to the ONE action that matters: clocking in.</div>
+  </div>
+
+  <!-- ============ D ============ -->
+  <div class="concept d">
+    <span class="tag">D</span>
+    <h2>Coach &amp; Game</h2>
+    <div class="sub">Duolingo energy. Streaks, XP, daily quests. Failing in front of friends costs you your streak — stakes become game mechanics.</div>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><div style="font-weight:900;font-size:19px">OneCase</div><div class="streak">🔥 6</div></div>
+      <div class="xp"><div class="lbl"><span>LEVEL 4</span><span>340/550 XP</span></div><div class="bar"><i></i></div></div>
+      <div class="quest">🎯 <span>Daily quest: clock in 25 min on Fitness<br><span style="font-weight:600;font-size:11px">Reward: +50 XP · keeps your streak</span></span></div>
+      <div class="grid">
+        <div class="block" style="background:#DFF5DC;border-color:#9ED898"><div class="e">💪</div><div class="t">Fitness</div><div class="bar"><i style="width:62%;background:#5CB85C"></i></div><div class="pct">62%</div></div>
+        <div class="block" style="background:#E2E8FF;border-color:#AABAFF"><div class="e">💼</div><div class="t">Startup</div><div class="bar"><i style="width:30%;background:#7189FF"></i></div><div class="pct">30%</div></div>
+        <div class="block" style="background:#FFEFD8;border-color:#FFCE8A"><div class="e">📚</div><div class="t">Reading</div><div class="bar"><i style="width:85%;background:#FFB037"></i></div><div class="pct">85%</div></div>
+        <div class="block" style="background:#fff;border-style:dashed;color:#9aa7c7;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:none">＋</div>
+      </div>
+      <div class="tabs">
+        <span class="on"><span class="ic">🏠</span>Home</span>
+        <span><span class="ic">⚔️</span>Quests</span>
+        <span><span class="ic">🏆</span>League</span>
+        <span><span class="ic">👥</span>Squad</span>
+      </div>
+    </div></div>
+    <div class="notes"><b>First thing you see:</b> your streak, your level, today’s quest.<br><b>Nav:</b> Home / Quests / League (friends leaderboard) / Squad.<br><b>Bet:</b> habit mechanics drive retention more than raw shame.</div>
+  </div>
+
+  <!-- ============ E ============ -->
+  <div class="concept e">
+    <span class="tag">E</span>
+    <h2>Clean Pro</h2>
+    <div class="sub">Quiet, typographic, dense. A serious tool that respects your attention. One accent color, hairline rules, no tab bar.</div>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><div class="logo">OneCase</div><div class="right"><span>⚡</span><span>👥</span><span>○</span></div></div>
+      <div class="cmd"><span>Search or jump to…</span><span>⌘K</span></div>
+      <div class="live-line"><span class="live-dot"></span> sam is live on <b>&nbsp;Run 3 miles</b> · watch</div>
+      <div class="sec">Today</div>
+      <div class="today">
+        <div class="row"><div class="check done"></div><div class="t" style="text-decoration:line-through;color:#aaa">Stretch 10 min</div><div class="pct">Fitness</div></div>
+        <div class="row"><div class="check"></div><div class="t">Run 3 miles</div><div class="pct">Fitness</div></div>
+        <div class="row"><div class="check"></div><div class="t">Pitch deck v3</div><div class="pct">Startup</div></div>
+      </div>
+      <div class="sec">Cases</div>
+      <div class="row"><div class="e2">💪</div><div class="t">Fitness</div><div class="pct">62%</div><div class="chev">›</div></div>
+      <div class="row"><div class="e2">💼</div><div class="t">Startup</div><div class="pct">30%</div><div class="chev">›</div></div>
+      <div class="row"><div class="e2">📚</div><div class="t">Reading</div><div class="pct">85%</div><div class="chev">›</div></div>
+      <div class="footer"><div class="newbtn">＋ New case or task</div></div>
+    </div></div>
+    <div class="notes"><b>First thing you see:</b> today’s tasks as a checklist; cases below.<br><b>Nav:</b> top icons only (activity, friends, profile) — no tab bar.<br><b>Bet:</b> the people who pay for accountability are planners — serve them.</div>
+  </div>
+
+  <!-- ============ F ============ -->
+  <div class="concept f">
+    <span class="tag">F</span>
+    <h2>Today Card Stack</h2>
+    <div class="sub">Anti-list. The app deals you ONE next action at a time as a swipeable card. Decide: do it now, or swipe to the next.</div>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><div><div class="hi">Tuesday, Jun 10</div><div class="date">What’s it gonna be?</div></div><div style="font-size:20px">🔔</div></div>
+      <div class="stackwrap">
+        <div class="ghost g1"></div>
+        <div class="ghost g2"></div>
+        <div class="maincard">
+          <div class="chip">💪 Fitness · 62%</div>
+          <div class="bigemoji">🏃</div>
+          <div class="taskname">Run 3 miles</div>
+          <div class="est">last session: 25 min</div>
+          <div class="go">⏰ Clock In</div>
+          <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="friends">
+        <div class="lbl">Meanwhile, your council</div>
+        <div class="frow"><span class="live-dot"></span><b>sam</b>&nbsp;is clocked in · <b>aisha</b> crushed 1 today</div>
+      </div>
+    </div></div>
+    <div class="notes"><b>First thing you see:</b> one card — your next task, ready to start.<br><b>Nav:</b> swipe between task cards; everything else is peripheral.<br><b>Bet:</b> choice is the enemy of doing — remove it.</div>
+  </div>
+
+</div>
+</body>
+</html>
